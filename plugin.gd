@@ -192,8 +192,20 @@ func _move_in(nodes: Array[Node], parent: Node) -> void:
 		var target : Node
 		var owner := node.owner
 		var node_data := _get_node_data(node)
+		var target_index := node.get_index() - 1
+		var selected := get_editor_interface().get_selection().get_selected_nodes()
 
-		if from_index == 0:
+		# find a target node that is not selected
+		while target_index >= 0:
+			if parent.get_child(target_index) in selected:
+				target_index -= 1
+				continue
+			else:
+				target = parent.get_child(target_index)
+				break
+
+		# if we dont have a target node we create one
+		if target == null:
 			if node is Control:
 				target = Control.new()
 			elif node is Node2D:
@@ -207,8 +219,6 @@ func _move_in(nodes: Array[Node], parent: Node) -> void:
 			get_undo_redo().add_do_method(parent, "add_child", target, true)
 			get_undo_redo().add_do_property(target, "owner", owner)
 			get_undo_redo().add_do_method(parent, "move_child", target, 0)
-		else:
-			target = parent.get_child(from_index - 1)
 
 
 		get_undo_redo().add_do_method(node, "reparent", target)

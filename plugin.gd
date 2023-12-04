@@ -178,6 +178,7 @@ func _move_out(nodes: Array[Node], parent: Node) -> void:
 func _move_in(nodes: Array[Node], parent: Node) -> void:
 	var offset := 1
 	var node_positions = {}
+	var default_target : Node
 
 	for i in nodes:
 		node_positions[i.get_index()] = i
@@ -206,19 +207,23 @@ func _move_in(nodes: Array[Node], parent: Node) -> void:
 
 		# if we dont have a target node we create one
 		if target == null:
-			if node is Control:
-				target = Control.new()
-			elif node is Node2D:
-				target = Node2D.new()
-			elif node is Node3D:
-				target = Node3D.new()
+			if default_target:
+				target = default_target
 			else:
-				target = Node.new()
-			get_undo_redo().add_undo_method(parent, "remove_child", target)
-			get_undo_redo().add_do_reference(target)
-			get_undo_redo().add_do_method(parent, "add_child", target, true)
-			get_undo_redo().add_do_property(target, "owner", owner)
-			get_undo_redo().add_do_method(parent, "move_child", target, 0)
+				if node is Control:
+					target = Control.new()
+				elif node is Node2D:
+					target = Node2D.new()
+				elif node is Node3D:
+					target = Node3D.new()
+				else:
+					target = Node.new()
+				default_target = target
+				get_undo_redo().add_undo_method(parent, "remove_child", target)
+				get_undo_redo().add_do_reference(target)
+				get_undo_redo().add_do_method(parent, "add_child", target, true)
+				get_undo_redo().add_do_property(target, "owner", owner)
+				get_undo_redo().add_do_method(parent, "move_child", target, 0)
 
 
 		get_undo_redo().add_do_method(node, "reparent", target)
